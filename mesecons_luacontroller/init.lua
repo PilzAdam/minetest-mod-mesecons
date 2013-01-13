@@ -141,7 +141,8 @@ local update = function (pos)
 				dump = dump,
 				pin = merge_portstates(vports, rports),
 				port = vports,
-				memory = memory}
+				memory = memory,
+				after = minetest.after}
 
 	-- Create Sandbox
 	if code:byte(1) == 27 then
