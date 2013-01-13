@@ -110,6 +110,14 @@ local overheat_off = function(pos)
 	mesecon:receptor_off(pos, rules)
 end
 
+local save_memory = function(meta, memory)
+	meta:set_string("mesecon_memory", minetest.serialize(memory))
+end
+
+local load_memory = function(meta)
+	return minetest.deserialize(meta:get_string("mesecon_memory"))
+end
+
 local update = function (pos)
 	local meta = minetest.env:get_meta(pos)
 	code = meta:get_string("code")
@@ -126,12 +134,14 @@ local update = function (pos)
 	local vports = minetest.registered_nodes[minetest.env:get_node(pos).name].virtual_portstates
 	vports = {a = vports.a, b = vports.b, c = vports.c, d = vports.d}
 	local rports = get_real_portstates(pos)
+	local memory = load_memory(meta) or {}
 
 	local env = {	print = print,
 				selfpos = pos,
 				dump = dump,
 				pin = merge_portstates(vports, rports),
-				port = vports}
+				port = vports,
+				memory = memory}
 
 	-- Create Sandbox
 	if code:byte(1) == 27 then
@@ -157,7 +167,11 @@ local update = function (pos)
 		return msg
 	else
 		action(pos, env.port)
+		
+		-- Save memory
+		save_memory(meta, env.memory)
 	end
+
 end
 
 local reset_meta = function(pos, code, errmsg)
